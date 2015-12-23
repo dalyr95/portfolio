@@ -1,0 +1,289 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+
+	<title>Robert Daly Devlopment</title>
+	<meta name="description" content="Robert Daly Devlopment. Freelance front-end development.">
+	<meta name="author" content="Robert Daly">
+
+	<style>
+		* { box-sizing: border-box; }
+
+		html,
+		body {
+			background: #4300ca;
+			background: linear-gradient(to bottom,  #4300ca 10%,#3a00b0 90%);
+			background-repeat: no-repeat;
+			padding: 0;
+			margin: 0;
+			min-height: 100vh;
+			overflow-x: hidden;
+		}
+
+		.flex {
+		    height: 100vh;
+		    width: 100vw;
+		    align-content: space-around;
+		    display: flex;
+		    flex-flow: row wrap;
+		    flex-wrap: wrap;
+		    justify-content: space-around;
+		    align-items: center;
+		}
+
+		.flex-bubble,
+		.flex-bubble > div {
+		    border-radius: 150px;
+		    height: 300px;
+		    position: relative;
+		    opacity: 0;
+		    width: 300px;
+		    overflow: hidden;
+		    transform: translate3d(0,0,0);
+		}
+
+		.flex-bubble > div {
+			background-repeat: no-repeat;
+			background-size: cover;
+			position: relative;
+			transform: scale(0);
+			transition: opacity 0.5s linear 0.4s, transform 0.5s linear 0.4s;
+		}
+
+		.flex-bubble .anchor {
+			height: 2px;
+			left: 50%;
+			margin-left: -1px;
+			position: absolute;
+			top: 0;
+			width: 2px;
+		}
+
+		.flex-bubble::after,
+		.flex-bubble::before {
+			border-radius: 100%;
+			border: 4px solid #fff;
+			content: '';
+			clip: rect(0, 150px, 300px, 0);
+			height: calc(300px - 8px);
+			right: 0;
+			position: absolute;
+			top: 0;
+			width: calc(300px - 8px);
+			transition: transform 0.2s linear;
+			z-index: 1;
+		}
+
+		.flex-bubble::before {
+			transition: transform 0.4s linear;
+		}
+
+		.flex-bubble.drawing {
+			opacity: 1;
+			animation-name: drawing;
+			animation-timing-function: steps(1, end);
+			animation-duration: 0.2s;
+			animation-fill-mode: forwards;
+		}
+
+		@keyframes drawing {
+			from {
+				border-radius: 0 150px 150px 0;
+				margin-left: 150px;
+				width: 150px;
+			}
+			100% {
+				border-radius: 150px;
+				margin-left: 0;
+				width: 300px;			
+			}
+		}
+
+		.flex-bubble.drawing > div {
+			opacity: 1;
+			transform: scale(1);
+		}
+
+		.flex-bubble.drawing::after,
+		.flex-bubble.drawing::before {
+			transform: rotate(180deg);
+		}
+
+		.flex-bubble.drawing::before {
+			transform: rotate(360deg);
+		}
+
+		/* #joiner */
+		.joiner {
+			background-color: #fff;
+			height: 0;
+			left: 0;
+			position: fixed;
+			top: 0;
+			width: 4px;
+			transform: translate3d(0,0,0);
+			transform-origin: 50% 0;
+			transition: height 0.2s linear;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="flex">
+		<div class="flex-bubble">
+			<div style="background-image: url('lexi.jpg')"></div>
+			<span class="anchor"></span>
+		</div>
+		<div class="flex-bubble">
+			<div style="background-image: url('lexi.jpg')"></div>
+			<span class="anchor"></span>
+		</div>
+		<div class="flex-bubble">
+			<div style="background-image: url('lexi.jpg')"></div>
+			<span class="anchor"></span>
+		</div>
+	</div>
+	<div id="joiner" class="joiner"></div>
+
+	<script>
+		/* TODO
+		Loop through bubbles, work out where they are in relation to each other,
+		place the anchor and get the position of the anchor, rotate the div, then pump that into data bubble for joiner
+		*/
+		var transitionendCount 	= 0;
+		var bubblesDrawn 		= 0;
+		var bubbleDrawFire 		= [1,7,12];
+		var lineDrawFire 		= [5,11]
+		var windowHeight 		= window.innerHeight;
+
+		// New
+		var flexBubbleAnimationCount 	= 0;
+		var joinerAnimationCount 		= 0;
+
+		document.body.addEventListener('transitionend', function(e) {
+			console.log('bubbleData', bubblesData[bubblesDrawn]);
+			if (e.target.classList.contains('joiner')) {
+				$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + halfBubble) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
+				$bubbles[bubblesDrawn].classList.add('drawing');
+			} else if (e.target.classList.contains('flex-bubble')) {
+				flexBubbleAnimationCount++;
+
+				if (flexBubbleAnimationCount === 2) {
+					$joiner.style.cssText = 'left:' + + 'px';
+				}
+			}
+			return;
+			if (e.target.classList.contains('flex-bubble')) {
+				flexBubbleAnimationCount++;
+
+				if (flexBubbleAnimationCount === 2) {
+					$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + halfBubble) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
+					setTimeout(function() {
+						console.log(bubblesData[bubblesDrawn]);
+						$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + (halfBubble * 2) - 5) + 'px; top:' + (bubblesData[bubblesDrawn].top + halfBubble) + 'px; bottom:auto; height: ' + bubblesData[bubblesDrawn].nextDistance + 'px; transform: rotate(' + (bubblesData[bubblesDrawn].nextVector - 90) + 'deg);';
+						bubblesDrawn++;
+					}, 0);
+					flexBubbleAnimationCount = 0;
+				}
+			} else if (e.target.classList.contains('joiner')) {
+				joinerAnimationCount++;
+				console.log('add ending class, start bubble');
+				$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + halfBubble) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
+				$bubbles[bubblesDrawn].classList.add('drawing');
+
+				if (joinerAnimationCount === 2) {
+					console.log('wait till bubble finished');
+
+					$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
+					joinerAnimationCount = 0;
+				}
+			}
+
+			return;
+
+			console.log(e.target.classList.contains('flex-bubble'));
+			transitionendCount++;
+
+			if (bubbleDrawFire.indexOf(transitionendCount) > - 1) {
+				$bubbles[bubblesDrawn].classList.add('drawing');
+				if (bubblesDrawn === 0) {
+					$joiner.style.cssText = 'left:' + ($bubbles[bubblesDrawn].offsetLeft) + 'px; top: auto; bottom:' + (windowHeight - $bubbles[bubblesDrawn].offsetTop) + 'px; height: 0px;';
+				}
+				bubblesDrawn++;
+			} else if (lineDrawFire.indexOf(transitionendCount) > - 1) {
+				// Figure out vector
+				var $newBubble 	= bubblesData[bubblesDrawn];
+				var $oldBubble 	= bubblesData[bubblesDrawn - 1];
+
+				var newBubbleLeft 	= $newBubble.left;
+				var newBubbleTop 	= $newBubble.top;
+				var oldBubbleLeft 	= $oldBubble.left;
+				var oldBubbleTop 	= $oldBubble.top;
+
+				console.log(pointDirection(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop) - 90, pointDistance(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop));
+				var vector 		= pointDirection(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop) - 90;
+				var distance 	= pointDistance(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop);
+
+				$joiner.style.cssText = 'left:' + (oldBubbleLeft + (halfBubble * 2) - 5) + 'px; top:' + (oldBubbleTop + halfBubble) + 'px; bottom:auto; height: 100px; transform: rotate(' + vector + 'deg);';
+			}
+		});
+
+		var $joiner 	= document.getElementById('joiner');
+		var $bubbles 	= document.getElementsByClassName('flex-bubble');
+		var bubblesData = [];
+
+		[].forEach.call($bubbles, function($bubble, index) {
+			var $newBubble 		= $bubbles[index + 1];
+
+			var bubbleLeft 		= $bubble.offsetLeft;
+			var bubbleTop 		= $bubble.offsetTop;
+
+			var data = {
+				left: $bubble.offsetLeft,
+				top: $bubble.offsetTop				
+			}
+
+			if ($newBubble) {
+				var $anchor				= $bubble.getElementsByClassName('anchor')[0];
+				var anchorLeft 			= $anchor.offsetLeft + $anchor.parentElement.offsetLeft;
+				var anchorTop 			= $anchor.offsetTop + $anchor.parentElement.offsetTop;
+
+				var nextBubbleLeft 		= $newBubble.offsetLeft;
+				var nextBubbleTop 		= $newBubble.offsetTop;
+
+				var $nextanchor			= $newBubble.getElementsByClassName('anchor')[0];
+				var nextAnchorLeft 		= $nextanchor.offsetLeft + $nextanchor.parentElement.offsetLeft;
+				var nextAnchorTop 		= $nextanchor.offsetTop + $nextanchor.parentElement.offsetTop;
+
+				$newBubble.style.cssText = 'transform: translate3d(0,0,0) rotate(' + (pointDirection(nextBubbleLeft, nextBubbleTop, bubbleLeft, bubbleTop) - 90) + 'deg);'; 
+
+				data.anchorLeft 	= anchorLeft;
+				data.anchorTop 		= anchorTop;
+				data.nextAnchorLeft	= nextAnchorLeft;
+				data.nextAnchorTop	= nextAnchorTop;
+				data.nextVector 	= parseInt(pointDirection(bubbleLeft, bubbleTop, nextBubbleLeft, nextBubbleTop), 10);
+				data.nextDistance 	= parseInt(pointDistance(bubbleLeft, bubbleTop, nextBubbleLeft, nextBubbleTop), 10);
+			}
+
+			bubblesData.push(data);
+		});
+
+		var halfBubble = 150;
+
+		$joiner.style.cssText = 'left:' + ($bubbles[0].offsetLeft + 150) + 'px; height:' + $bubbles[0].offsetTop + 'px;';
+
+
+		function pointDirection(x1, y1, x2, y2) {
+			console.log('pointDirection',Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI);
+		    return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+		}
+
+		function pointDistance(x1, y1, x2, y2) {
+			return Math.sqrt( (x2-=x1)*x2 + (y2-=y1)*y2 );
+		}
+
+	</script>
+</body>
+</html>

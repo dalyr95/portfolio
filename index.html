@@ -195,6 +195,29 @@
 
 					this.bubbleData.push(bubble);
 				}.bind(this));
+
+				var rows = {};
+
+				this.bubbleData.forEach(function(bubble) {
+					if (!rows[bubble.row]) {
+						rows[bubble.row] = [bubble];
+					} else {
+						rows[bubble.row].push(bubble);
+					}
+				});
+
+				var i = 0;
+				for (var row in rows) {
+					if (i !== 0 && i % 2 === 1) {
+						rows[row] = rows[row].reverse();
+					}
+					i++;
+				};
+
+				for (var row in rows) {
+
+				}
+
 				/*
 				[].forEach.call(this.bubbleData, function(bubble, index) {
 					if (this.bubbleData[index + 1]) {

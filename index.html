@@ -53,6 +53,7 @@
 		}
 
 		.flex-bubble .anchor {
+			background: red;
 			height: 2px;
 			left: 50%;
 			margin-left: -1px;
@@ -144,6 +145,14 @@
 			<div style="background-image: url('lexi.jpg')"></div>
 			<span class="anchor"></span>
 		</div>
+		<div class="flex-bubble">
+			<div style="background-image: url('lexi.jpg')"></div>
+			<span class="anchor"></span>
+		</div>
+		<div class="flex-bubble">
+			<div style="background-image: url('lexi.jpg')"></div>
+			<span class="anchor"></span>
+		</div>
 	</div>
 	<div id="joiner" class="joiner"></div>
 
@@ -152,136 +161,105 @@
 		Loop through bubbles, work out where they are in relation to each other,
 		place the anchor and get the position of the anchor, rotate the div, then pump that into data bubble for joiner
 		*/
-		var transitionendCount 	= 0;
-		var bubblesDrawn 		= 0;
-		var bubbleDrawFire 		= [1,7,12];
-		var lineDrawFire 		= [5,11]
-		var windowHeight 		= window.innerHeight;
-
-		// New
-		var flexBubbleAnimationCount 	= 0;
-		var joinerAnimationCount 		= 0;
-
 		document.body.addEventListener('transitionend', function(e) {
-			console.log('bubbleData', bubblesData[bubblesDrawn]);
-			if (e.target.classList.contains('joiner')) {
-				$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + halfBubble) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
-				$bubbles[bubblesDrawn].classList.add('drawing');
-			} else if (e.target.classList.contains('flex-bubble')) {
-				flexBubbleAnimationCount++;
-
-				if (flexBubbleAnimationCount === 2) {
-					$joiner.style.cssText = 'left:' + + 'px';
-				}
-			}
-			return;
-			if (e.target.classList.contains('flex-bubble')) {
-				flexBubbleAnimationCount++;
-
-				if (flexBubbleAnimationCount === 2) {
-					$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + halfBubble) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
-					setTimeout(function() {
-						console.log(bubblesData[bubblesDrawn]);
-						$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + (halfBubble * 2) - 5) + 'px; top:' + (bubblesData[bubblesDrawn].top + halfBubble) + 'px; bottom:auto; height: ' + bubblesData[bubblesDrawn].nextDistance + 'px; transform: rotate(' + (bubblesData[bubblesDrawn].nextVector - 90) + 'deg);';
-						bubblesDrawn++;
-					}, 0);
-					flexBubbleAnimationCount = 0;
-				}
-			} else if (e.target.classList.contains('joiner')) {
-				joinerAnimationCount++;
-				console.log('add ending class, start bubble');
-				$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left + halfBubble) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
-				$bubbles[bubblesDrawn].classList.add('drawing');
-
-				if (joinerAnimationCount === 2) {
-					console.log('wait till bubble finished');
-
-					$joiner.style.cssText = 'left:' + (bubblesData[bubblesDrawn].left) + 'px; top: auto; bottom:' + (windowHeight - bubblesData[bubblesDrawn].top) + 'px; height: 0px;';
-					joinerAnimationCount = 0;
-				}
-			}
-
-			return;
-
-			console.log(e.target.classList.contains('flex-bubble'));
-			transitionendCount++;
-
-			if (bubbleDrawFire.indexOf(transitionendCount) > - 1) {
-				$bubbles[bubblesDrawn].classList.add('drawing');
-				if (bubblesDrawn === 0) {
-					$joiner.style.cssText = 'left:' + ($bubbles[bubblesDrawn].offsetLeft) + 'px; top: auto; bottom:' + (windowHeight - $bubbles[bubblesDrawn].offsetTop) + 'px; height: 0px;';
-				}
-				bubblesDrawn++;
-			} else if (lineDrawFire.indexOf(transitionendCount) > - 1) {
-				// Figure out vector
-				var $newBubble 	= bubblesData[bubblesDrawn];
-				var $oldBubble 	= bubblesData[bubblesDrawn - 1];
-
-				var newBubbleLeft 	= $newBubble.left;
-				var newBubbleTop 	= $newBubble.top;
-				var oldBubbleLeft 	= $oldBubble.left;
-				var oldBubbleTop 	= $oldBubble.top;
-
-				console.log(pointDirection(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop) - 90, pointDistance(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop));
-				var vector 		= pointDirection(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop) - 90;
-				var distance 	= pointDistance(oldBubbleLeft, oldBubbleTop, newBubbleLeft, newBubbleTop);
-
-				$joiner.style.cssText = 'left:' + (oldBubbleLeft + (halfBubble * 2) - 5) + 'px; top:' + (oldBubbleTop + halfBubble) + 'px; bottom:auto; height: 100px; transform: rotate(' + vector + 'deg);';
-			}
+			console.log('transitionend');
 		});
 
-		var $joiner 	= document.getElementById('joiner');
-		var $bubbles 	= document.getElementsByClassName('flex-bubble');
-		var bubblesData = [];
+		var portfolio = {
+			vectorCalculation: function() {
+				var row = 1;
 
-		[].forEach.call($bubbles, function($bubble, index) {
-			var $newBubble 		= $bubbles[index + 1];
+				[].forEach.call(this.$bubbles, function($bubble, index) {
+					var bubble = {
+						el: $bubble
+					};
 
-			var bubbleLeft 		= $bubble.offsetLeft;
-			var bubbleTop 		= $bubble.offsetTop;
+					bubble.offset = {
+						top: $bubble.offsetTop,
+						left: $bubble.offsetLeft
+					}
 
-			var data = {
-				left: $bubble.offsetLeft,
-				top: $bubble.offsetTop				
-			}
+					var $anchor = $bubble.getElementsByClassName('anchor')[0];
 
-			if ($newBubble) {
-				var $anchor				= $bubble.getElementsByClassName('anchor')[0];
-				var anchorLeft 			= $anchor.offsetLeft + $anchor.parentElement.offsetLeft;
-				var anchorTop 			= $anchor.offsetTop + $anchor.parentElement.offsetTop;
+					var bounds = $anchor.getBoundingClientRect();
 
-				var nextBubbleLeft 		= $newBubble.offsetLeft;
-				var nextBubbleTop 		= $newBubble.offsetTop;
+					bubble.anchor = {
+						top: bounds.top,
+						left: bounds.left
+					}
+					bubble.row = row;
+					if (this.bubbleData[index - 1] && bounds.top !== this.bubbleData[index - 1].anchor.top) {
+						row++;
+						bubble.row = row;
+					}
 
-				var $nextanchor			= $newBubble.getElementsByClassName('anchor')[0];
-				var nextAnchorLeft 		= $nextanchor.offsetLeft + $nextanchor.parentElement.offsetLeft;
-				var nextAnchorTop 		= $nextanchor.offsetTop + $nextanchor.parentElement.offsetTop;
+					this.bubbleData.push(bubble);
+				}.bind(this));
+				/*
+				[].forEach.call(this.bubbleData, function(bubble, index) {
+					if (this.bubbleData[index + 1]) {
+						var $el 	= bubble.el;
+						var next 	= this.bubbleData[index + 1];
+						var angle 	= Math.ceil(pointDirection(bubble.offset.left + 150, bubble.offset.top + 150, next.offset.left + 150, next.offset.top + 150));
+						var lower 	= (bubble.offset.top === next.offset.top) ? 90 : angle * -2;
 
-				$newBubble.style.cssText = 'transform: translate3d(0,0,0) rotate(' + (pointDirection(nextBubbleLeft, nextBubbleTop, bubbleLeft, bubbleTop) - 90) + 'deg);'; 
+						$el.style.cssText = 'transform: rotate(' + (angle + lower) + 'deg); opacity: 1;'
 
-				data.anchorLeft 	= anchorLeft;
-				data.anchorTop 		= anchorTop;
-				data.nextAnchorLeft	= nextAnchorLeft;
-				data.nextAnchorTop	= nextAnchorTop;
-				data.nextVector 	= parseInt(pointDirection(bubbleLeft, bubbleTop, nextBubbleLeft, nextBubbleTop), 10);
-				data.nextDistance 	= parseInt(pointDistance(bubbleLeft, bubbleTop, nextBubbleLeft, nextBubbleTop), 10);
-			}
+						var $anchor = $el.getElementsByClassName('anchor')[0];
 
-			bubblesData.push(data);
-		});
+						var bounds = $anchor.getBoundingClientRect();
 
-		var halfBubble = 150;
+						bubble.anchor = {
+							top: bounds.top,
+							left: bounds.left
+						}
 
-		$joiner.style.cssText = 'left:' + ($bubbles[0].offsetLeft + 150) + 'px; height:' + $bubbles[0].offsetTop + 'px;';
+						var joinerAngle 	= Math.ceil(pointDirection(bubble.offset.left + 150, bubble.offset.top + 300, next.offset.left + 150, next.offset.left));
+						var joinerDistance 	= Math.abs(Math.ceil(pointDistance(bubble.offset.left + 150, bubble.offset.top + 300, next.offset.left + 150, next.offset.top)));
+						console.log(index, joinerAngle, joinerDistance);
+						bubble.joiner = {
+							angle: joinerAngle * -1,
+							distance: joinerDistance
+						}
 
+						$el.removeAttribute('style');
+						$el.classList.add('drawing');
+					}
+				}.bind(this));
+				*/
+			},
+			fireJoiner: function() {
+				var time = 0;
+				[].forEach.call(this.bubbleData, function(bubble, index) {
+					if (bubble.anchor) {
+						setTimeout(function() {
+							console.log('fire', bubble.anchor.top, bubble.joiner.angle);
+							this.$joiner.style.cssText = 'top:' + bubble.anchor.top + 'px; left:' + bubble.anchor.left + 'px; height:' + bubble.joiner.distance + 'px; transform: rotate(' + bubble.joiner.angle + 'deg);';
+						}.bind(this), time);
+						time = time + 5000;
+					}
+				}.bind(this));
+			},
+			init: function() {
+				this.bubbleData 	= [];
+				this.windowHeight 	= window.innerHeight;
+				this.$joiner 		= document.getElementById('joiner');
+				this.$bubbles 		= document.getElementsByClassName('flex-bubble');
+
+				this.vectorCalculation();
+				//this.fireJoiner();
+				console.log('init');
+			}	
+		}
+
+		portfolio.init();
 
 		function pointDirection(x1, y1, x2, y2) {
-			console.log('pointDirection',Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI);
 		    return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 		}
 
 		function pointDistance(x1, y1, x2, y2) {
-			return Math.sqrt( (x2-=x1)*x2 + (y2-=y1)*y2 );
+			return Math.abs(Math.sqrt((x2-=x1)*x2 + (y2-=y1)*y2));
 		}
 
 	</script>
